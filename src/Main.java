@@ -32,14 +32,15 @@ public class Main {
 			int lastNode = Integer.parseInt(line[1]); //dreno
 			//vb.addFirstFlux(firstNode);
 		
-			VultBurglarySystem vb = new VultBurglarySystemClass(numLocations, firstNode, numThieves, lastNode);
+			VultBurglarySystem vb = new VultBurglarySystemClass(numLocations, firstNode, numThieves, lastNode, numRoads);
 			
+			vb.addBefore(firstNode);
 			for(int i = 0; i< numRoads; i++){
 				String[] locations = roads[i].split(" ");
 				vb.addPassage(Integer.parseInt(locations[0]), Integer.parseInt(locations[1]));
 			}
 
-			System.out.println(vb.getMaxFlux());
+			System.out.println(Math.min(vb.getMaxFlux(),numThieves)*numGoldBars);
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);

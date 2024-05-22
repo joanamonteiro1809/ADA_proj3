@@ -7,24 +7,30 @@ public class VultBurglarySystemClass implements VultBurglarySystem{
 	private int flux;
 	private int numThieves;
 	private int dreno;
+  private int numLocations;
+  private int numRoads;
 	
-	public VultBurglarySystemClass(int numLocations, int flux, int numThieves, int dreno) {
-		g = new Graph(numLocations*2);
-		this.flux = flux;
+	public VultBurglarySystemClass(int numLocations, int flux, int numThieves, int dreno, int numRoads) {
+    g = new Graph(2*(numLocations+2));
+    this.flux = flux;
 		this.numThieves = numThieves;
 		this.dreno = dreno;
+    this.numLocations = numLocations;
+    this.numRoads = numRoads;
 	}
 
 	public void addPassage(int firstNode, int secondNode) {
-		if(firstNode == flux || secondNode == flux)
-			g.addEdge(firstNode, secondNode, numThieves);
-		else
-			g.addEdge(firstNode, secondNode, 1);
+    g.addEdge(firstNode, secondNode, 1);
+    g.addEdge(secondNode, firstNode, 1);
 	}
 
 	public int getMaxFlux(){
 		return g.DinicMaxflow(flux, dreno);
 	}
+
+  public void addBefore(int flux){
+    g.addEdge(0, flux, numLocations);
+  }
 
 }
 
@@ -56,6 +62,7 @@ class Graph {
     private int[] level;        // Stores level of graph
     private List<Edge>[] adj;
  
+    @SuppressWarnings("unchecked")
     public Graph(int V) {
         adj = new ArrayList[V];
         for (int i = 0; i < V; i++) {
@@ -67,22 +74,20 @@ class Graph {
  
       // Add edge to the graph
     public void addEdge(int u, int v, int C) {
-          // Forward edge : 0 flow and C capacity
-        Edge a = new Edge(v, 0, C, adj[v].size());
-       
-          // Back edge : 0 flow and 0 capacity
-        Edge b = new Edge(u, 0, 0, adj[u].size());
- 
-		Edge c = new Edge(u, 0, C, adj[u].size());
-       
-          // Back edge : 0 flow and 0 capacity
-        Edge d = new Edge(v, 0, 0, adj[v].size());
-		
-        adj[u].add(a);
-		adj[u].add(d);
-        adj[v].add(b);
-		adj[v].add(c);
-    }
+        // Forward edge : 0 flow and C capacity
+
+/*       if(adj[v].isEmpty()){ // fazer ligacao de uma direcao entre ae e as ae->as com peso 1
+        Edge as = new Edge(v, 0 , C, v);
+      } */
+
+      Edge a = new Edge(v, 0, C, adj[v].size());
+     
+        // Back edge : 0 flow and 0 capacity
+      Edge b = new Edge(u, 0, 0, adj[u].size());
+
+      adj[u].add(a);
+      adj[v].add(b);
+  }
  
       // Finds if more flow can be sent from s to t.
     // Also assigns levels to nodes.
@@ -171,7 +176,7 @@ class Graph {
  
         int total = 0;
  
-          // Augment the flow while there is path
+        // Augment the flow while there is path
         // from source to sink
         while (BFS(s, t) == true) {
            
