@@ -11,7 +11,7 @@ public class VultBurglarySystemClass implements VultBurglarySystem{
   private int numRoads;
 	
 	public VultBurglarySystemClass(int numLocations, int flux, int numThieves, int dreno, int numRoads) {
-    g = new Graph(2*(numLocations+2));
+    g = new Graph(2*(numLocations+2),numLocations);
     this.flux = flux;
 		this.numThieves = numThieves;
 		this.dreno = dreno;
@@ -61,10 +61,12 @@ class Graph {
     private int V;                // No. of vertex
     private int[] level;        // Stores level of graph
     private List<Edge>[] adj;
+    private int numLocations;
  
     @SuppressWarnings("unchecked")
-    public Graph(int V) {
-        adj = new ArrayList[V];
+    public Graph(int V, int numLocations) {
+      this.numLocations = numLocations;
+        adj = new ArrayList[2*V];
         for (int i = 0; i < V; i++) {
             adj[i] = new ArrayList<Edge>();
         }
@@ -74,19 +76,39 @@ class Graph {
  
       // Add edge to the graph
     public void addEdge(int u, int v, int C) {
-        // Forward edge : 0 flow and C capacity
 
-/*       if(adj[v].isEmpty()){ // fazer ligacao de uma direcao entre ae e as ae->as com peso 1
-        Edge as = new Edge(v, 0 , C, v);
-      } */
+      if(adj[u].size() == 1){ //optimizar pq nem sempre precisa, ex ter apenas 2 saidas e uma entrada
+        addEdge(u,numLocations+u ,1); //criar caminhos entre entrada e saida
+        addEdge(numLocations+u,u,1);
+        for(int i = 0; i< adj[u].size();i++){       
+          Edge tmp = new Edge(u, 0, 0, adj[u].size());
+          adj[u].remove(i);
+          for(int j = 0; j< adj[v].size(); i++){
+            if(adj[v].get(j) == tmp)
+              adj[v].remove(j);
+          }
 
-      Edge a = new Edge(v, 0, C, adj[v].size());
+          tmp = new Edge(numLocations+u, 0, 0, adj[numLocations+u].size());
+          adj[numLocations+u].add(adj[u].get(i));
+          adj[v].add(tmp);
+        }
+      } else if(adj[u].size() > 1){
+          Edge a = new Edge(v, 0, C, adj[v].size());
      
-        // Back edge : 0 flow and 0 capacity
-      Edge b = new Edge(u, 0, 0, adj[u].size());
+          Edge b = new Edge(numLocations+u, 0, 0, adj[u].size());
 
-      adj[u].add(a);
-      adj[v].add(b);
+          adj[numLocations+u].add(a);
+          adj[v].add(b);
+      } else{
+        Edge a = new Edge(v, 0, C, adj[v].size());
+      
+          // Back edge : 0 flow and 0 capacity
+        Edge b = new Edge(u, 0, 0, adj[u].size());
+
+        adj[u].add(a);
+        adj[v].add(b);
+      }
+
   }
  
       // Finds if more flow can be sent from s to t.
@@ -181,7 +203,7 @@ class Graph {
         while (BFS(s, t) == true) {
            
               // store how many edges are visited
-            // from V { 0 to V }
+              // from V { 0 to V }
             int[] start = new int[V + 1];
  
               // while flow is not zero in graph from S to D
