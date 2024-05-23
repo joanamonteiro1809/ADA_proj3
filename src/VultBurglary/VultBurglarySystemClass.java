@@ -77,13 +77,20 @@ class Graph {
       // Add edge to the graph
     public void addEdge(int u, int v, int C) {
 
-      if(adj[u].size() == 1){ //optimizar pq nem sempre precisa, ex ter apenas 2 saidas e uma entrada
-        addEdge(u,numLocations+u ,1); //criar caminhos entre entrada e saida
-        addEdge(numLocations+u,u,1);
+      if(adj[u].size() == 2){ //optimizar pq nem sempre precisa, ex ter apenas 2 saidas e uma entrada
+        //addEdge(u,numLocations+u ,1); //criar caminhos entre entrada e saida
+        //addEdge(numLocations+u,u,1);
+        Edge a = new Edge(u, 0, C, adj[numLocations+u].size());
+      
+          // Back edge : 0 flow and 0 capacity
+        Edge b = new Edge(numLocations+u, 0, 0, adj[u].size());
+
+        adj[u].add(a);
+        adj[numLocations+u].add(b);
         for(int i = 0; i< adj[u].size();i++){       
           Edge tmp = new Edge(u, 0, 0, adj[u].size());
           adj[u].remove(i);
-          for(int j = 0; j< adj[v].size(); i++){
+          for(int j = 0; j< adj[v].size(); j++){
             if(adj[v].get(j) == tmp)
               adj[v].remove(j);
           }
@@ -92,7 +99,7 @@ class Graph {
           adj[numLocations+u].add(adj[u].get(i));
           adj[v].add(tmp);
         }
-      } else if(adj[u].size() > 1){
+      } else if(adj[u].size() > 2){
           Edge a = new Edge(v, 0, C, adj[v].size());
      
           Edge b = new Edge(numLocations+u, 0, 0, adj[u].size());
