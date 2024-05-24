@@ -6,5 +6,5 @@ public interface VultBurglarySystem {
 
     public int getMaxFlux();
 
-    public void addBefore(int flux);
+/*     public void addBefore(int flux); */
 }

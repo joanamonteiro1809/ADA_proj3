@@ -33,14 +33,18 @@ public class Main {
 			//vb.addFirstFlux(firstNode);
 		
 			VultBurglarySystem vb = new VultBurglarySystemClass(numLocations, firstNode, numThieves, lastNode, numRoads);
+
+			
 			
 			for(int i = 0; i< numRoads; i++){
 				String[] locations = roads[i].split(" ");
 				vb.addPassage(Integer.parseInt(locations[0]), Integer.parseInt(locations[1]));
 			}
-			vb.addBefore(firstNode);
+/* 			vb.addBefore(firstNode); */
 
 			System.out.println(Math.min(vb.getMaxFlux(),numThieves)*numGoldBars);
+/* 			System.out.println(vb.getMaxFlux()); */
+
 
 		} catch (IOException e) {
 			throw new RuntimeException(e);
