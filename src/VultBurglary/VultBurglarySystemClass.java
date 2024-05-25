@@ -4,41 +4,30 @@ import java.util.*;
 public class VultBurglarySystemClass implements VultBurglarySystem{
 
 	private Graph g;
-	private int flux;
 	private int numThieves;
-	private int dreno;
-  private int numLocations;
-  private int numRoads;
+  private int numGoldBars;
+/*   private int numLocations;
+  private int numRoads; */
 	
-	public VultBurglarySystemClass(int numLocations, int flux, int numThieves, int dreno, int numRoads) {
-    g = new Graph(2*(numLocations+2),numLocations);
-    this.flux = flux;
+	public VultBurglarySystemClass(int numLocations, int numThieves, int numRoads, int numGoldBars) {
+    //g = new Graph(2*(numLocations)+1);
+    g = new Graph(numLocations);
 		this.numThieves = numThieves;
-		this.dreno = dreno;
-    this.numLocations = numLocations;
-    this.numRoads = numRoads;
-    g.makeDuplicates(dreno, flux);
-/*     g.makeDuplicates(); */
-/*     g.addBefore(flux); */
+    this.numGoldBars = numGoldBars;
+/*     this.numLocations = numLocations;
+    this.numRoads = numRoads; */
+    g.makeDuplicates();
 	}
 
-	public void addPassage(int firstNode, int secondNode) {
-    if(firstNode == dreno || secondNode == dreno){
-      if(firstNode == dreno)
-        firstNode = secondNode;
-      g.addEdge(firstNode, dreno, 1);
-    }
-/*       g.addEdge(secondNode, dreno, 1);
-    else if(secondNode == dreno)
-      g.addEdge(firstNode, dreno, 1); */
-    else{
-      g.addEdge(firstNode, secondNode, 1);
-      g.addEdge(secondNode, firstNode, 1);
-    }
-	}
 
-	public int getMaxFlux(){
-		return g.DinicMaxflow(flux, dreno);
+  public void addPassage(int firstNode, int secondNode){
+    g.addEdge(firstNode, secondNode, 1);
+    g.addEdge(secondNode, firstNode, 1);
+  }
+
+	public int getMaxFlux(int flux, int dreno){
+    g.prepare(flux,numThieves);
+		return g.DinicMaxflow(flux, dreno) * numGoldBars;
 	}
 
 }
@@ -63,8 +52,6 @@ class Edge {
         this.C = C;
         this.rev = rev;
     }
-
-
 }
  
 // Residual Graph
@@ -72,57 +59,42 @@ class Graph {
     private int V;                // No. of vertex
     private int[] level;        // Stores level of graph
     private List<Edge>[] adj;
-    private int numLocations;
+/*     private int numLocations; */
 
+    //V = numLocations
     @SuppressWarnings("unchecked")
-    public Graph(int V, int numLocations) {
-      this.numLocations = numLocations;
-        adj = new ArrayList[2*V];
+    public Graph(int V) {
+/*       this.numLocations = V; */
+        adj = new ArrayList[2*(V)+1];
         for (int i = 0; i < V; i++) {
-            adj[i] = new ArrayList<Edge>();
+            adj[i] = new ArrayList<Edge>(V-1); //TODO: pensar quanto meter no tamanho aqui
         }
         this.V = V;
         level = new int[V];
     }
 
-/*     public void addBefore(int flux){
-      Edge tmp = new Edge(flux, 0, 1000, adj[flux].size());
-      Edge tmp2 = new Edge(0, 0, 0, 0);
-      adj[0].add(tmp);
-      adj[flux].add(tmp2);
-    } */
-
+    public void prepare(int flux, int numThieves){
+      adj[flux].get(0).C = numThieves;
+    }
 
     public void addEdge(int u, int v, int C) {
       Edge a = new Edge(v, 0, C, adj[v].size());
 
-      Edge b = new Edge(numLocations+u, 0, 0, adj[numLocations+u].size());
+      Edge b = new Edge(V+u, 0, 0, adj[V+u].size());
 
-      adj[numLocations+u].add(a);
+      adj[V+u].add(a);
       adj[v].add(b);
     }
 
-    public void makeDuplicates(int dreno, int flux){  //para se decidirmos criar as passagens depois de sabermos o flux e o dreno, pior complexidade espacial no main
-      for(int i = 1; i<= numLocations; i++){
-        if(i != dreno){
-          Edge tmp = new Edge(numLocations+i, 0, 1, adj[numLocations+i].size());
-          if(i == flux)
-            tmp.C = 1000;
-          Edge tmp2 = new Edge(i, 0, 0, adj[i].size());
-          adj[i].add(tmp);
-          adj[numLocations+i].add(tmp2);
-        }
+    public void makeDuplicates(){
+      Edge tmp, tmp2;
+      for (int i = 1; i <= V; i++) {
+        tmp = new Edge(V + i, 0, 1, adj[V + i].size());
+        tmp2 = new Edge(i, 0, 0, adj[i].size());
+        adj[i].add(tmp);
+        adj[V + i].add(tmp2);
       }
     }
-
-/*     public void makeDuplicates(){
-      for(int i = 1; i<= numLocations; i++){
-        Edge tmp = new Edge(numLocations+i, 0, 1, adj[numLocations+i].size());  
-        Edge tmp2 = new Edge(i, 0, 0, adj[i].size());
-        adj[i].add(tmp);
-        adj[numLocations+i].add(tmp2);
-      }
-    } */
  
       // Finds if more flow can be sent from s to t.
     // Also assigns levels to nodes.
